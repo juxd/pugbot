@@ -1,25 +1,31 @@
 var Discord = require("discord.js");
 var bot = new Discord.Client();
+var sqlite3 = require("sqlite3");
+var pugs = new sqlite3.Database("./db/pugs.db");
+var players = new sqlite3.Database("./db/players.db");
 
 let prefix = "!";
 
 var pugInfo = [];
 var pugPlayers = [];
+var pugCount = 0;
 
 bot.on("message", msg => 
 {
     if (msg.content.startsWith(prefix + "newpug")) 
     {
-      if (!msg.author.bot && (msg.member.highestRole.position >= 0)) 
+      if (!msg.author.bot && (msg.member.highestRole.position > 0)) 
       {
         pugInfo = msg.content.split(" ", 3);
-        msg.channel.sendMessage("New pug on " + pugInfo[1] + " at " + pugInfo[2]);
-        msg.channel.sendMessage("Type !join to join");
+        pugCount++;
+        msg.channel.sendMessage("New pug (ID: " + pugCount.toString() + ") on " + pugInfo[1] + " at " + pugInfo[2]);
+        msg.channel.sendMessage("Type !join <id> to join");
+        pugs.run("INSERT into pugs VALUES(" + pugCount.toString() + ", '" + pugInfo[1] + "', '" + pugInfo[2] + ", 1)");
       };
     }
     else if (msg.content.startsWith(prefix + "checkStat")) 
     {
-      if (!msg.author.bot && (msg.member.highestRole.position >= 0)) 
+      if (!msg.author.bot && (msg.member.highestRole.position > 0)) 
       {
          for (i=0; i<=pugPlayers.length; i++)
          {
@@ -40,7 +46,13 @@ bot.on("message", msg =>
         msg.channel.sendMessage(pugPlayers.toString());
       };
     }
-
+    else if (msg.content.startsWith(prefix + "endpug")) 
+    {
+      if (!msg.author.bot && (msg.member.highestRole.position > 0)) 
+      {
+        pugs.run("UPDATE pugs SET live = 0 WHERE id = " + msg.content.match("\d"));
+      };
+    }
     else 
     {
 
@@ -52,4 +64,4 @@ bot.on('ready', () =>
   console.log('I am ready!');
 });
 
-bot.login("<botkey>");
+bot.login("MjMwNjYwMTI1NDAzMjUwNjg5.Cs1D2Q.jSpZVJPHoZMA-UoYUVpW4zodlYs");
