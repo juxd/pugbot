@@ -64,4 +64,4 @@ bot.on('ready', () =>
   console.log('I am ready!');
 });
 
-bot.login("MjMwNjYwMTI1NDAzMjUwNjg5.Cs1D2Q.jSpZVJPHoZMA-UoYUVpW4zodlYs");
+bot.login("<botkey>");
