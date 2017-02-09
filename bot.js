@@ -8,6 +8,11 @@ var players = new sqlite3.Database("./db/players.db");
 
 let prefix = config.prefix;
 
+const EventEmitter = require('events');
+class PlayerEvents extends EventEmittter {}
+const PlayerEvents = new PlayerEvents();
+
+
 var pugCount = 0;
 var pugLive = false;
 var pugPlayers = [];
@@ -21,7 +26,11 @@ bot.on("message", msg => {
           var pugInfo = msg.content.split(" ", 3);
           pugCount++;
           msg.channel.sendMessage("New pug on " + pugInfo[1] + " at " + pugInfo[2]);
-          msg.channel.sendMessage("Type !join to join")
+          msg.channel.sendMessage("Type !join to join").then(function(message) {
+            PlayerEvents.on('newPlayer', function() {
+              message.edit("Current list: \n `" + pugPlayers.join("\n") + "`");
+            })
+          });
           pugs.run("INSERT into pugs VALUES(" + pugCount.toString() + ", '" + pugInfo[1] + "', '" + pugInfo[2] + "', 1)");
         }
         else if (pugLive == true){
@@ -39,6 +48,7 @@ bot.on("message", msg => {
         pugPlayers.push(msg.author.username);
         entryCount++;
         pugs.run("INSERT into entries VALUES(" + entryCount.toString() + ", " + pugCount.toString() + ", '" + msg.author.username + "')");
+        PlayerEvents.emit('newPlayer');
         msg.channel.sendMessage(msg.author.username + ", you've been added to the list!");
         msg.delete;
       };
